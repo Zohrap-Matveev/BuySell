@@ -18,4 +18,22 @@ public class GlobalExceptionHandler{
         );
         return new ResponseEntity(response,HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler({UserAlreadyExistException.class})
+    public ResponseEntity<HttpStatus> handleException(UserAlreadyExistException e){
+        ErrorResponse response = new ErrorResponse(
+                "User whit this email already exist",
+                LocalDate.now()
+        );
+        return new ResponseEntity(response,HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler({ImageNotFoundException.class})
+    public ResponseEntity<HttpStatus> handleException(ImageNotFoundException e){
+        ErrorResponse response = new ErrorResponse(
+                "Image whit this id wasn't found",
+                LocalDate.now()
+        );
+        return new ResponseEntity(response,HttpStatus.NOT_FOUND);
+    }
 }

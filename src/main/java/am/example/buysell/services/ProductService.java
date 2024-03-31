@@ -3,7 +3,9 @@ package am.example.buysell.services;
 import am.example.buysell.exceptions.ProductNotFoundException;
 import am.example.buysell.models.Image;
 import am.example.buysell.models.Product;
+import am.example.buysell.models.User;
 import am.example.buysell.repositories.ProductRepository;
+import am.example.buysell.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 
 @Slf4j
@@ -19,6 +22,7 @@ import java.util.List;
 public class ProductService{
 
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public List<Product> listProducts(String title){
@@ -29,7 +33,8 @@ public class ProductService{
     }
 
     @Transactional
-    public void saveProduct(Product product, MultipartFile file1, MultipartFile file2, MultipartFile file3) throws IOException{
+    public void saveProduct(Principal principal, Product product, MultipartFile file1, MultipartFile file2, MultipartFile file3) throws IOException{
+        product.setUser(getUserByPrincipal(principal));
         Image image1;
         Image image2;
         Image image3;
@@ -46,12 +51,20 @@ public class ProductService{
             image3 = toImageEntity(file3);
             product.addImageToProduct(image3);
         }
-        log.info("Saving new Product. Title: {}; Author: {}", product.getTitle(), product.getAuthor());
+        log.info("Saving new Product. Title: {}; Author email : {}", product.getTitle(), product.getUser().getEmail());
         Product productFromDb = productRepository.save(product);
         if (!product.getImages().isEmpty()) {
             productFromDb.setPreviewImageId(product.getImages().get(0).getId());
             productRepository.save(productFromDb);
         }
+    }
+
+    @Transactional
+    public User getUserByPrincipal(Principal principal){
+        if(principal == null) {
+            return new User();
+        }
+        return userRepository.findByEmail(principal.getName());
     }
 
     @Transactional

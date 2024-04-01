@@ -20,10 +20,8 @@ public class ImageController {
     private final ImageRepository imageRepository;
 
     @GetMapping("/images/{id}")
-    @Transactional(readOnly = true)
-    public ResponseEntity<?> getImageById(@PathVariable Long id) {
-        Image image = imageRepository.findById(id)
-                .orElseThrow(ImageNotFoundException ::new);
+    private ResponseEntity<?> getImageById(@PathVariable Long id) {
+        Image image = imageRepository.findById(id).orElse(null);
         return ResponseEntity.ok()
                 .header("fileName", image.getOriginalFileName())
                 .contentType(MediaType.valueOf(image.getContentType()))
